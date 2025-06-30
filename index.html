@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF Power Tools - Your All-in-One PDF Solution</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- pdf-lib.js for PDF manipulation -->
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+
+    <!-- FileSaver.js for saving files -->
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+    <!-- JSZip for creating zip files -->
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom Styles and Fonts -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .tool-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .drag-area {
+            border: 2px dashed #d1d5db;
+        }
+        .drag-area.drag-over {
+            border-color: #4f46e5;
+            background-color: #e0e7ff;
+        }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+
+    <!-- App Container -->
+    <div id="app" class="flex flex-col min-h-screen">
+
+        <!-- Header -->
+        <header class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center">
+                        <a href="#" id="home-link" class="flex-shrink-0 flex items-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-8 w-8 text-indigo-600"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            <span class="text-xl font-bold text-gray-900 dark:text-white">PDF Power</span>
+                        </a>
+                        <nav class="hidden md:flex md:ml-10 md:space-x-8">
+                            <a href="#" id="all-tools-link" class="text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">All Tools</a>
+                            <a href="#" class="text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Premium Features</a>
+                        </nav>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button id="dark-mode-toggle" class="p-2 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+                            <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 hidden"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+                        </button>
+                        <a href="#" class="text-sm font-medium text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Login</a>
+                        <a href="#" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">Sign Up</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow">
+            <!-- Homepage: Tool Grid -->
+            <div id="homepage">
+                <div class="py-12 bg-white dark:bg-gray-800">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="text-center">
+                            <h1 class="text-4xl font-extrabold text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
+                                The All-in-One PDF Toolkit You Need
+                            </h1>
+                            <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-500 dark:text-gray-300">
+                                Seamlessly manage, convert, edit, and secure your PDF files right in your browser.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ad Banner above tools -->
+                <div class="container mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+                    <div class="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center text-gray-500">
+                        Advertisement
+                    </div>
+                </div>
+
+                <div id="tool-grid" class="max-w-7xl mx-auto pt-4 pb-12 px-4 sm:px-6 lg:px-8">
+                    <!-- Tools will be injected here by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Tool Interface Page -->
+            <div id="tool-page" class="hidden">
+                 <!-- Tool-specific content will be injected here -->
+            </div>
+        </main>
+        
+        <!-- Ad Banner -->
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center text-gray-500">
+                Advertisement
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+            <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
+                <div class="flex justify-center space-x-6 md:order-2">
+                    <!-- Social media icons -->
+                </div>
+                <div class="mt-8 md:mt-0 md:order-1">
+                    <p class="text-center text-base text-gray-400">&copy; 2025 PDF Power. All rights reserved.</p>
+                </div>
+                <div class="mt-8 md:mt-0 md:order-3 flex justify-center space-x-6">
+                     <a href="#" class="text-gray-400 hover:text-gray-500">About Us</a>
+                     <a href="#" class="text-gray-400 hover:text-gray-500">Privacy Policy</a>
+                     <a href="#" class="text-gray-400 hover:text-gray-500">Contact</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const { PDFDocument, rgb, StandardFonts } = PDFLib;
+            const { saveAs } = FileSaver;
+            const { JSZip } = window;
+
+            // --- App State ---
+            let currentTool = null;
+            let files = [];
+
+            // --- DOM Elements ---
+            const app = document.getElementById('app');
+            const homepage = document.getElementById('homepage');
+            const toolGrid = document.getElementById('tool-grid');
+            const toolPage = document.getElementById('tool-page');
+            const homeLink = document.getElementById('home-link');
+            const allToolsLink = document.getElementById('all-tools-link');
+            const darkModeToggle = document.getElementById('dark-mode-toggle');
+            const sunIcon = document.getElementById('sun-icon');
+            const moonIcon = document.getElementById('moon-icon');
+
+            // --- Tool Definitions ---
+            const tools = [
+                // Organize & Edit
+                { id: 'merge-pdf', name: 'Merge PDF', description: 'Combine multiple PDFs into one single document.', icon: 'copy-plus', category: 'Organize & Edit', implemented: true },
+                { id: 'split-pdf', name: 'Split PDF', description: 'Divide a PDF into multiple smaller documents.', icon: 'scissors', category: 'Organize & Edit', implemented: true },
+                { id: 'organize-pdf', name: 'Organize PDF', description: 'Reorder, rotate, or delete pages from a PDF.', icon: 'layers', category: 'Organize & Edit', implemented: false },
+                { id: 'edit-pdf', name: 'Edit PDF', description: 'Add text, images, and shapes to your PDF.', icon: 'edit', category: 'Organize & Edit', implemented: false },
+                { id: 'page-numbers', name: 'Page Numbers', description: 'Insert page numbers into your PDF document.', icon: 'hash', category: 'Organize & Edit', implemented: true },
+                { id: 'rotate-pdf', name: 'Rotate PDF', description: 'Rotate all or specific pages in your PDF.', icon: 'rotate-cw', category: 'Organize & Edit', implemented: true },
+                { id: 'crop-pdf', name: 'Crop PDF', description: 'Select an area and crop your PDF pages.', icon: 'crop', category: 'Organize & Edit', implemented: false },
+                // Convert from PDF
+                { id: 'pdf-to-word', name: 'PDF to Word', description: 'Convert your PDF to an editable DOCX file.', icon: 'file-text', category: 'Convert from PDF', implemented: false },
+                { id: 'pdf-to-powerpoint', name: 'PDF to PowerPoint', description: 'Convert PDF pages into PPTX slides.', icon: 'file-pie-chart', category: 'Convert from PDF', implemented: false },
+                { id: 'pdf-to-excel', name: 'PDF to Excel', description: 'Extract tables from PDF to an XLSX spreadsheet.', icon: 'file-spreadsheet', category: 'Convert from PDF', implemented: false },
+                { id: 'pdf-to-jpg', name: 'PDF to JPG', description: 'Convert each PDF page into a JPG image.', icon: 'file-image', category: 'Convert from PDF', implemented: false },
+                { id: 'pdf-to-pdfa', name: 'PDF to PDF/A', description: 'Convert your PDF to the PDF/A archival format.', icon: 'archive', category: 'Convert from PDF', implemented: false },
+                // Convert to PDF
+                { id: 'word-to-pdf', name: 'Word to PDF', description: 'Convert DOCX documents to PDF.', icon: 'file-text', category: 'Convert to PDF', implemented: false },
+                { id: 'powerpoint-to-pdf', name: 'PowerPoint to PDF', description: 'Convert PPTX presentations to PDF.', icon: 'file-pie-chart', category: 'Convert to PDF', implemented: false },
+                { id: 'excel-to-pdf', name: 'Excel to PDF', description: 'Convert XLSX spreadsheets to PDF.', icon: 'file-spreadsheet', category: 'Convert to PDF', implemented: false },
+                { id: 'jpg-to-pdf', name: 'JPG to PDF', description: 'Convert JPG images to a single PDF file.', icon: 'file-image', category: 'Convert to PDF', implemented: false },
+                { id: 'html-to-pdf', name: 'HTML to PDF', description: 'Convert webpages to PDF from a URL.', icon: 'globe', category: 'Convert to PDF', implemented: false },
+                // Security & Optimization
+                { id: 'compress-pdf', name: 'Compress PDF', description: 'Reduce the file size of your PDF.', icon: 'file-minus-2', category: 'Security & Optimization', implemented: false },
+                { id: 'unlock-pdf', name: 'Unlock PDF', description: 'Remove password protection from a PDF.', icon: 'unlock', category: 'Security & Optimization', implemented: false },
+                { id: 'protect-pdf', name: 'Protect PDF', description: 'Add a password and encrypt your PDF.', icon: 'lock', category: 'Security & Optimization', implemented: false },
+                { id: 'sign-pdf', name: 'Sign PDF', description: 'Place your signature on a PDF document.', icon: 'edit-3', category: 'Security & Optimization', implemented: false },
+                { id: 'watermark', name: 'Watermark', description: 'Add a text or image watermark to your PDF.', icon: 'droplets', category: 'Security & Optimization', implemented: false },
+                { id: 'redact-pdf', name: 'Redact PDF', description: 'Permanently black out sensitive information.', icon: 'square', category: 'Security & Optimization', implemented: false },
+                { id: 'repair-pdf', name: 'Repair PDF', description: 'Attempt to recover data from a corrupted PDF.', icon: 'wrench', category: 'Security & Optimization', implemented: false },
+                // Advanced Tools
+                { id: 'ocr-pdf', name: 'OCR PDF', description: 'Make scanned PDF text selectable and searchable.', icon: 'scan-text', category: 'Advanced Tools', implemented: false },
+                { id: 'scan-to-pdf', name: 'Scan to PDF', description: 'Use your phone to scan documents to PDF.', icon: 'camera', category: 'Advanced Tools', implemented: false },
+                { id: 'compare-pdf', name: 'Compare PDF', description: 'Highlight the differences between two PDFs.', icon: 'git-compare', category: 'Advanced Tools', implemented: false },
+            ];
+
+            // --- UI Rendering ---
+            
+            /**
+             * Renders the main tool grid on the homepage.
+             */
+            function renderToolGrid() {
+                const categories = [...new Set(tools.map(tool => tool.category))];
+                let gridHtml = '';
+                
+                categories.forEach(category => {
+                    gridHtml += `<div class="mb-12">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">${category}</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">`;
+                    
+                    tools.filter(tool => tool.category === category).forEach(tool => {
+                        gridHtml += `
+                            <div class="tool-card bg-white dark:bg-gray-800 rounded-lg p-6 text-center cursor-pointer border border-gray-200 dark:border-gray-700" data-tool-id="${tool.id}">
+                                <div class="flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 mx-auto">
+                                    <i data-lucide="${tool.icon}" class="h-6 w-6"></i>
+                                </div>
+                                <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">${tool.name}</h3>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">${tool.description}</p>
+                            </div>
+                        `;
+                    });
+
+                    gridHtml += `</div></div>`;
+                });
+
+                toolGrid.innerHTML = gridHtml;
+                lucide.createIcons(); // Re-render icons
+
+                // Add event listeners to the new cards
+                document.querySelectorAll('.tool-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        const toolId = card.dataset.toolId;
+                        const tool = tools.find(t => t.id === toolId);
+                        if (tool) {
+                            showToolPage(tool);
+                        }
+                    });
+                });
+            }
+
+            /**
+             * Shows the specific tool page and hides the homepage.
+             * @param {object} tool - The tool object to display.
+             */
+            function showToolPage(tool) {
+                currentTool = tool;
+                homepage.classList.add('hidden');
+                toolPage.classList.remove('hidden');
+                toolPage.innerHTML = generateToolPageHTML(tool);
+                lucide.createIcons();
+                setupToolPageEventListeners(tool);
+                window.scrollTo(0, 0);
+            }
+
+            /**
+             * Generates the HTML for a specific tool's interface page.
+             * @param {object} tool - The tool object.
+             * @returns {string} - The HTML string for the tool page.
+             */
+            function generateToolPageHTML(tool) {
+                return `
+                    <div class="bg-white dark:bg-gray-800 py-12">
+                        <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                            <div class="flex items-center justify-center h-16 w-16 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 mx-auto">
+                                <i data-lucide="${tool.icon}" class="h-8 w-8"></i>
+                            </div>
+                            <h1 class="mt-4 text-4xl font-extrabold text-gray-900 dark:text-white">${tool.name}</h1>
+                            <p class="mt-2 max-w-2xl mx-auto text-lg text-gray-500 dark:text-gray-300">${tool.description}</p>
+                        </div>
+                    </div>
+
+                    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                        <div class="flex flex-col lg:flex-row gap-8">
+                            <!-- Main Content: File Upload & Preview -->
+                            <div class="flex-grow">
+                                <div id="file-upload-area" class="drag-area rounded-lg p-8 text-center bg-gray-50 dark:bg-gray-700/50">
+                                    <div class="flex flex-col items-center justify-center h-full">
+                                        <i data-lucide="upload-cloud" class="h-16 w-16 text-gray-400"></i>
+                                        <p class="mt-4 text-lg text-gray-600 dark:text-gray-300">Drag & drop files here</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">or</p>
+                                        <button id="select-files-btn" class="mt-4 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                            Select File(s)
+                                        </button>
+                                        <input type="file" id="file-input" class="hidden" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.ppt,.pptx,.xls,.xlsx">
+                                    </div>
+                                </div>
+                                <div id="file-preview-area" class="mt-6 hidden">
+                                    <!-- File previews will be generated here -->
+                                </div>
+                                <div id="processing-result" class="mt-6 hidden text-center">
+                                    <!-- Processing result will be shown here -->
+                                </div>
+                            </div>
+
+                            <!-- Right Sidebar: Options & Action -->
+                            <div class="w-full lg:w-80 xl:w-96 flex-shrink-0">
+                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 sticky top-24">
+                                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 uppercase">${tool.name} OPTIONS</h3>
+                                    <div id="tool-options" class="space-y-4">
+                                        ${getToolOptionsHTML(tool.id)}
+                                    </div>
+                                    <button id="action-btn" class="mt-6 w-full py-3 px-6 bg-indigo-600 text-white font-bold rounded-lg shadow-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center" disabled>
+                                        <span id="action-btn-text">${tool.name}</span>
+                                        <div id="loader" class="animate-spin rounded-full h-5 w-5 border-b-2 border-white ml-3 hidden"></div>
+                                    </button>
+                                </div>
+                                <div class="mt-8 h-64 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center text-gray-500">
+                                    Advertisement
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            /**
+             * Gets the specific HTML for a tool's options panel.
+             * @param {string} toolId - The ID of the tool.
+             * @returns {string} The HTML for the options.
+             */
+            function getToolOptionsHTML(toolId) {
+                switch (toolId) {
+                    case 'split-pdf':
+                        return `
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Split Mode</label>
+                                <select id="split-mode" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="ranges">Split by range</option>
+                                    <option value="extract">Extract all pages</option>
+                                </select>
+                            </div>
+                            <div id="split-range-options">
+                                <label for="split-ranges" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Page Ranges</label>
+                                <input type="text" id="split-ranges" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600" placeholder="e.g., 1-3, 5, 7-9">
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Separate ranges with commas.</p>
+                            </div>
+                        `;
+                    case 'rotate-pdf':
+                        return `
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Rotation Angle</label>
+                                <select id="rotation-angle" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="90">90° Clockwise</option>
+                                    <option value="180">180°</option>
+                                    <option value="270">270° Clockwise</option>
+                                </select>
+                            </div>
+                        `;
+                    case 'page-numbers':
+                         return `
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Position</label>
+                                <select id="page-number-position" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <option value="top-left">Top Left</option>
+                                    <option value="top-center">Top Center</option>
+                                    <option value="top-right">Top Right</option>
+                                    <option value="bottom-left">Bottom Left</option>
+                                    <option value="bottom-center" selected>Bottom Center</option>
+                                    <option value="bottom-right">Bottom Right</option>
+                                </select>
+                            </div>
+                             <div>
+                                <label for="page-number-margin" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Margin (pixels)</label>
+                                <input type="number" id="page-number-margin" value="30" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600">
+                            </div>
+                             <div>
+                                <label for="page-number-start" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start from page</label>
+                                <input type="number" id="page-number-start" value="1" min="1" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600">
+                            </div>
+                        `;
+                    case 'compress-pdf':
+                        return `
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Compression is a complex feature that often requires server-side processing for best results. This is a UI placeholder.</p>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Compression Level</label>
+                                <div class="mt-2 space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="radio" name="compression" value="low" class="form-radio h-4 w-4 text-indigo-600 border-gray-300">
+                                        <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Low Compression (High Quality)</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" name="compression" value="recommended" checked class="form-radio h-4 w-4 text-indigo-600 border-gray-300">
+                                        <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Recommended Compression</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="radio" name="compression" value="extreme" class="form-radio h-4 w-4 text-indigo-600 border-gray-300">
+                                        <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Extreme Compression (Low Quality)</span>
+                                    </label>
+                                </div>
+                            </div>
+                        `;
+                    default:
+                        if (!tools.find(t => t.id === toolId)?.implemented) {
+                            return `<p class="text-sm text-gray-600 dark:text-gray-400">This feature is currently under development. The UI is for demonstration purposes.</p>`;
+                        }
+                        return '<p class="text-sm text-gray-600 dark:text-gray-400">No specific options for this tool.</p>';
+                }
+            }
+            
+            /**
+             * Sets up event listeners for the currently active tool page.
+             * @param {object} tool - The current tool object.
+             */
+            function setupToolPageEventListeners(tool) {
+                const selectFilesBtn = document.getElementById('select-files-btn');
+                const fileInput = document.getElementById('file-input');
+                const uploadArea = document.getElementById('file-upload-area');
+                const actionBtn = document.getElementById('action-btn');
+
+                selectFilesBtn.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+                // Drag and drop
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    uploadArea.classList.add('drag-over');
+                });
+                uploadArea.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    uploadArea.classList.remove('drag-over');
+                });
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    uploadArea.classList.remove('drag-over');
+                    handleFiles(e.dataTransfer.files);
+                });
+
+                actionBtn.addEventListener('click', () => processFiles(tool));
+
+                // Specific options listeners
+                if (tool.id === 'split-pdf') {
+                    const splitMode = document.getElementById('split-mode');
+                    const rangeOptions = document.getElementById('split-range-options');
+                    splitMode.addEventListener('change', (e) => {
+                        rangeOptions.style.display = e.target.value === 'ranges' ? 'block' : 'none';
+                    });
+                }
+            }
+
+            /**
+             * Handles the selected files from input or drag-drop.
+             * @param {FileList} selectedFiles - The files selected by the user.
+             */
+            function handleFiles(selectedFiles) {
+                // Basic validation
+                if (!selectedFiles || selectedFiles.length === 0) {
+                    showError('No files selected.');
+                    return;
+                }
+                
+                // For single-file tools, only take the first one
+                const singleFileTools = ['split-pdf', 'rotate-pdf', 'page-numbers'];
+                if (singleFileTools.includes(currentTool.id) && selectedFiles.length > 1) {
+                    showError('This tool only accepts a single file.');
+                    files = [selectedFiles[0]];
+                } else {
+                    files = [...selectedFiles];
+                }
+
+                updateFilePreview();
+                document.getElementById('action-btn').disabled = false;
+                document.getElementById('processing-result').classList.add('hidden');
+            }
+            
+            /**
+             * Updates the file preview area with the current files.
+             */
+            function updateFilePreview() {
+                const previewArea = document.getElementById('file-preview-area');
+                const uploadArea = document.getElementById('file-upload-area');
+                
+                if (files.length === 0) {
+                    previewArea.classList.add('hidden');
+                    uploadArea.classList.remove('hidden');
+                    return;
+                }
+
+                uploadArea.classList.add('hidden');
+                previewArea.classList.remove('hidden');
+                previewArea.innerHTML = ''; // Clear previous previews
+                
+                const fileList = document.createElement('div');
+                fileList.className = 'space-y-3';
+
+                files.forEach((file, index) => {
+                    const fileElement = document.createElement('div');
+                    fileElement.className = 'bg-white dark:bg-gray-700 p-3 rounded-lg shadow-sm flex items-center justify-between';
+                    fileElement.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <i data-lucide="file-text" class="h-6 w-6 text-indigo-500"></i>
+                            <span class="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">${file.name}</span>
+                        </div>
+                        <button class="remove-file-btn p-1 text-gray-400 hover:text-red-500" data-index="${index}">
+                            <i data-lucide="x-circle" class="h-5 w-5"></i>
+                        </button>
+                    `;
+                    fileList.appendChild(fileElement);
+                });
+
+                previewArea.appendChild(fileList);
+                lucide.createIcons();
+
+                // Add event listeners to remove buttons
+                document.querySelectorAll('.remove-file-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = parseInt(e.currentTarget.dataset.index, 10);
+                        files.splice(index, 1);
+                        updateFilePreview();
+                        if (files.length === 0) {
+                            document.getElementById('action-btn').disabled = true;
+                        }
+                    });
+                });
+            }
+
+            /**
+             * Main function to process files based on the current tool.
+             * @param {object} tool - The current tool object.
+             */
+            async function processFiles(tool) {
+                if (!tool.implemented) {
+                    showResult('This feature is not yet implemented.', 'info');
+                    return;
+                }
+                
+                toggleLoading(true);
+
+                try {
+                    switch (tool.id) {
+                        case 'merge-pdf':
+                            await mergePdf();
+                            break;
+                        case 'split-pdf':
+                            await splitPdf();
+                            break;
+                        case 'rotate-pdf':
+                            await rotatePdf();
+                            break;
+                        case 'page-numbers':
+                            await addPageNumbers();
+                            break;
+                        default:
+                            showError('Unknown tool or not implemented.');
+                            break;
+                    }
+                } catch (error) {
+                    console.error('Processing error:', error);
+                    showError(`An error occurred: ${error.message}`);
+                } finally {
+                    toggleLoading(false);
+                }
+            }
+
+            // --- PDF Processing Functions ---
+
+            /**
+             * Merges multiple PDF files into one.
+             */
+            async function mergePdf() {
+                if (files.length < 2) {
+                    showError('Please select at least two PDF files to merge.');
+                    return;
+                }
+                const mergedPdf = await PDFDocument.create();
+                for (const file of files) {
+                    const pdfBytes = await file.arrayBuffer();
+                    const pdfDoc = await PDFDocument.load(pdfBytes);
+                    const copiedPages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+                    copiedPages.forEach((page) => mergedPdf.addPage(page));
+                }
+                const mergedPdfBytes = await mergedPdf.save();
+                const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+                saveAs(blob, 'merged.pdf');
+                showResult('PDFs merged successfully!', 'success', blob, 'merged.pdf');
+            }
+
+            /**
+             * Splits a PDF based on user-selected options.
+             */
+            async function splitPdf() {
+                if (files.length !== 1) {
+                    showError('Please select exactly one PDF file to split.');
+                    return;
+                }
+                const file = files[0];
+                const pdfBytes = await file.arrayBuffer();
+                const pdfDoc = await PDFDocument.load(pdfBytes);
+                const pageCount = pdfDoc.getPageCount();
+                
+                const splitMode = document.getElementById('split-mode').value;
+
+                if (splitMode === 'extract') {
+                    const zip = new JSZip();
+                    for (let i = 0; i < pageCount; i++) {
+                        const newPdf = await PDFDocument.create();
+                        const [copiedPage] = await newPdf.copyPages(pdfDoc, [i]);
+                        newPdf.addPage(copiedPage);
+                        const pdfBytes = await newPdf.save();
+                        zip.file(`page_${i + 1}.pdf`, pdfBytes);
+                    }
+                    const zipBlob = await zip.generateAsync({ type: 'blob' });
+                    saveAs(zipBlob, 'split_pages.zip');
+                    showResult('All pages extracted successfully!', 'success', zipBlob, 'split_pages.zip');
+                } else { // split by ranges
+                    const rangesStr = document.getElementById('split-ranges').value;
+                    if (!rangesStr) {
+                        showError('Please specify page ranges.');
+                        return;
+                    }
+                    const ranges = rangesStr.split(',').map(r => r.trim());
+                    const zip = new JSZip();
+                    let fileIndex = 1;
+                    for (const range of ranges) {
+                        const newPdf = await PDFDocument.create();
+                        const pageIndices = parseRange(range, pageCount);
+                        if (pageIndices.length === 0) continue;
+                        const copiedPages = await newPdf.copyPages(pdfDoc, pageIndices);
+                        copiedPages.forEach(page => newPdf.addPage(page));
+                        const pdfBytes = await newPdf.save();
+                        zip.file(`range_${fileIndex++}.pdf`, pdfBytes);
+                    }
+                    if (Object.keys(zip.files).length > 0) {
+                        const zipBlob = await zip.generateAsync({ type: 'blob' });
+                        saveAs(zipBlob, 'split_ranges.zip');
+                        showResult('PDF split by range successfully!', 'success', zipBlob, 'split_ranges.zip');
+                    } else {
+                        showError('No valid pages found for the specified ranges.');
+                    }
+                }
+            }
+            
+            /**
+             * Rotates pages in a PDF.
+             */
+            async function rotatePdf() {
+                if (files.length !== 1) {
+                    showError('Please select exactly one PDF file to rotate.');
+                    return;
+                }
+                const angle = parseInt(document.getElementById('rotation-angle').value, 10);
+                const file = files[0];
+                const pdfBytes = await file.arrayBuffer();
+                const pdfDoc = await PDFDocument.load(pdfBytes);
+                
+                const pages = pdfDoc.getPages();
+                pages.forEach(page => {
+                    const currentRotation = page.getRotation().angle;
+                    page.setRotation({ angle: (currentRotation + angle) % 360 });
+                });
+
+                const rotatedPdfBytes = await pdfDoc.save();
+                const blob = new Blob([rotatedPdfBytes], { type: 'application/pdf' });
+                saveAs(blob, 'rotated.pdf');
+                showResult('PDF rotated successfully!', 'success', blob, 'rotated.pdf');
+            }
+
+            /**
+             * Adds page numbers to a PDF.
+             */
+            async function addPageNumbers() {
+                if (files.length !== 1) {
+                    showError('Please select exactly one PDF file.');
+                    return;
+                }
+                const file = files[0];
+                const pdfBytes = await file.arrayBuffer();
+                const pdfDoc = await PDFDocument.load(pdfBytes);
+                const pages = pdfDoc.getPages();
+                const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+                const position = document.getElementById('page-number-position').value;
+                const margin = parseInt(document.getElementById('page-number-margin').value, 10);
+                const startPage = parseInt(document.getElementById('page-number-start').value, 10) - 1;
+
+                for (let i = startPage; i < pages.length; i++) {
+                    if (i < 0) continue;
+                    const page = pages[i];
+                    const { width, height } = page.getSize();
+                    const pageNumber = (i + 1).toString();
+                    const textSize = 12;
+
+                    let x, y;
+                    const textWidth = helveticaFont.widthOfTextAtSize(pageNumber, textSize);
+
+                    switch (position) {
+                        case 'top-left': x = margin; y = height - margin; break;
+                        case 'top-center': x = width / 2 - textWidth / 2; y = height - margin; break;
+                        case 'top-right': x = width - textWidth - margin; y = height - margin; break;
+                        case 'bottom-left': x = margin; y = margin; break;
+                        case 'bottom-center': x = width / 2 - textWidth / 2; y = margin; break;
+                        case 'bottom-right': x = width - textWidth - margin; y = margin; break;
+                    }
+
+                    page.drawText(pageNumber, {
+                        x, y,
+                        size: textSize,
+                        font: helveticaFont,
+                        color: rgb(0, 0, 0),
+                    });
+                }
+
+                const numberedPdfBytes = await pdfDoc.save();
+                const blob = new Blob([numberedPdfBytes], { type: 'application/pdf' });
+                saveAs(blob, 'numbered.pdf');
+                showResult('Page numbers added successfully!', 'success', blob, 'numbered.pdf');
+            }
+
+
+            // --- Utility Functions ---
+
+            /**
+             * Parses a string range (e.g., "1-3, 5") into an array of zero-based indices.
+             * @param {string} rangeStr - The string to parse.
+             * @param {number} max - The maximum allowed page number.
+             * @returns {number[]} An array of page indices.
+             */
+            function parseRange(rangeStr, max) {
+                const indices = new Set();
+                const parts = rangeStr.split('-');
+                if (parts.length === 1) {
+                    const pageNum = parseInt(parts[0], 10);
+                    if (!isNaN(pageNum) && pageNum > 0 && pageNum <= max) {
+                        indices.add(pageNum - 1);
+                    }
+                } else if (parts.length === 2) {
+                    const start = parseInt(parts[0], 10);
+                    const end = parseInt(parts[1], 10);
+                    if (!isNaN(start) && !isNaN(end) && start <= end) {
+                        for (let i = start; i <= end; i++) {
+                            if (i > 0 && i <= max) {
+                                indices.add(i - 1);
+                            }
+                        }
+                    }
+                }
+                return Array.from(indices);
+            }
+
+            /**
+             * Shows the processing result message and download button.
+             * @param {string} message - The message to display.
+             * @param {'success'|'error'|'info'} type - The type of message.
+             * @param {Blob} [blob] - The file blob for the download button.
+             * @param {string} [fileName] - The name for the downloaded file.
+             */
+            function showResult(message, type, blob, fileName) {
+                const resultArea = document.getElementById('processing-result');
+                const color = type === 'success' ? 'green' : (type === 'error' ? 'red' : 'blue');
+                resultArea.innerHTML = `
+                    <div class="bg-${color}-100 border-l-4 border-${color}-500 text-${color}-700 p-4 rounded-md" role="alert">
+                        <p class="font-bold">${type === 'success' ? 'Task Complete!' : 'Notice'}</p>
+                        <p>${message}</p>
+                    </div>
+                    ${blob ? `
+                    <button id="download-btn" class="mt-4 px-8 py-3 bg-${color}-600 text-white font-semibold rounded-lg shadow-md hover:bg-${color}-700">
+                        Download ${fileName}
+                    </button>` : ''}
+                `;
+                resultArea.classList.remove('hidden');
+
+                if (blob) {
+                    document.getElementById('download-btn').addEventListener('click', () => {
+                        saveAs(blob, fileName);
+                    });
+                }
+            }
+
+            /**
+             * Shows an error message.
+             * @param {string} message - The error message.
+             */
+            function showError(message) {
+                showResult(message, 'error');
+            }
+
+            /**
+             * Toggles the loading state of the action button.
+             * @param {boolean} isLoading - Whether to show the loader.
+             */
+            function toggleLoading(isLoading) {
+                const actionBtn = document.getElementById('action-btn');
+                const btnText = document.getElementById('action-btn-text');
+                const loader = document.getElementById('loader');
+
+                if (isLoading) {
+                    actionBtn.disabled = true;
+                    btnText.classList.add('hidden');
+                    loader.classList.remove('hidden');
+                } else {
+                    actionBtn.disabled = false;
+                    btnText.classList.remove('hidden');
+                    loader.classList.add('hidden');
+                }
+            }
+            
+            /**
+             * Navigates back to the homepage.
+             */
+            function goHome() {
+                currentTool = null;
+                files = [];
+                homepage.classList.remove('hidden');
+                toolPage.classList.add('hidden');
+                toolPage.innerHTML = '';
+            }
+
+            // --- Dark Mode ---
+            function setupDarkMode() {
+                if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                    sunIcon.classList.add('hidden');
+                    moonIcon.classList.remove('hidden');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    sunIcon.classList.remove('hidden');
+                    moonIcon.classList.add('hidden');
+                }
+
+                darkModeToggle.addEventListener('click', () => {
+                    const isDark = document.documentElement.classList.toggle('dark');
+                    localStorage.theme = isDark ? 'dark' : 'light';
+                    sunIcon.classList.toggle('hidden');
+                    moonIcon.classList.toggle('hidden');
+                });
+            }
+
+            // --- Initial Setup ---
+            homeLink.addEventListener('click', (e) => { e.preventDefault(); goHome(); });
+            allToolsLink.addEventListener('click', (e) => { e.preventDefault(); goHome(); });
+
+            renderToolGrid();
+            setupDarkMode();
+        });
+    </script>
+</body>
+</html>
